@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
           await prisma.order.update({
             where: { id: orderId },
             data: {
-              status: 'paid',
+              status: 'confirmed',
               paymentStatus: 'completed',
               stripePaymentIntentId: session.payment_intent as string,
               stripeSessionId: session.id,
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
           await prisma.order.update({
             where: { id: paymentIntent.metadata.orderId },
             data: {
-              status: 'failed',
+              status: 'pending',
               paymentStatus: 'failed',
             },
           });

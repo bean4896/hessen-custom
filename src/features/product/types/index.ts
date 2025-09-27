@@ -2,6 +2,14 @@
 export * from '../../../shared/types/ecommerce';
 
 // Product-specific types
+export interface ProductConfiguration {
+  material: string;
+  size: string;
+  headboard: string;
+  bedframeBody: string;
+  finishColour: string;
+  optional: string[];
+}
 export interface ProductConfiguratorProps {
   selectedOptions: ProductConfiguration;
   onOptionChange: (category: string, value: string | string[]) => void;

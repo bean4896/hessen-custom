@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { DatabaseService } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,7 +27,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // This would typically require admin authentication
-    const product = await DatabaseService.createProduct(body)
+    const product = await prisma.product.create({
+      data: body,
+    })
     
     return NextResponse.json({
       success: true,

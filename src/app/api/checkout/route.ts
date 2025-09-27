@@ -5,7 +5,7 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
 });
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,12 @@ export async function POST(request: NextRequest) {
     const order = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true,
+            variant: true,
+          },
+        },
         shippingAddress: true,
       },
     });
@@ -32,12 +37,12 @@ export async function POST(request: NextRequest) {
 
     // For authenticated users, verify order belongs to them
     const session = await getServerSession(authOptions);
-    if (session?.user?.id && order.userId !== session.user.id) {
+    if (session?.user && (session.user as any).id && order.userId !== (session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
     // Calculate total amount
-    const subtotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const subtotal = order.items.reduce((sum, item) => sum + (Number(item.price) * item.quantity), 0);
     const tax = subtotal * 0.09; // 9% GST
     const shipping = subtotal >= 500 ? 0 : 50;
     const total = subtotal + tax + shipping;
@@ -50,11 +55,11 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'sgd',
             product_data: {
-              name: item.name,
-              description: `Size: ${item.configuration?.size}, Material: ${item.configuration?.material}`,
-              images: item.image ? [item.image] : [],
+              name: item.product?.name || 'Custom Product',
+              description: `Size: ${(item.configuration as any)?.size}, Material: ${(item.configuration as any)?.material}`,
+              images: item.variant?.image ? [item.variant.image] : [],
             },
-            unit_amount: Math.round(item.price * 100), // Convert to cents
+            unit_amount: Math.round(Number(item.price) * 100), // Convert to cents
           },
           quantity: item.quantity,
         })),

@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
     } else {
       // Use authenticated user
       const session = await getServerSession(authOptions);
-      if (!session?.user?.id) {
+      if (!session?.user || !(session.user as any).id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
-      userId = session.user.id;
+      userId = (session.user as any).id;
     }
 
     // Generate order number
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
             variantId: item.variantId || null,
             quantity: item.quantity,
             price: item.price,
-            total: item.price * item.quantity,
+            total: Number(item.price) * item.quantity,
             configuration: item.configuration || null,
           },
         });
@@ -123,13 +123,13 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const orders = await prisma.order.findMany({
       where: {
-        userId: session.user.id,
+        userId: (session.user as any).id,
       },
       include: {
         items: {

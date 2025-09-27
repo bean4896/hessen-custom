@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
+  apiVersion: '2025-08-27.basil',
 });
 
 export async function POST(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total amount in cents
-    const totalAmountInCents = Math.round(order.total * 100);
+    const totalAmountInCents = Math.round(Number(order.total) * 100);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmountInCents,

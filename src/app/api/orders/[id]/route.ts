@@ -5,19 +5,19 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user || !(session.user as any).id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const order = await prisma.order.findFirst({
       where: {
-        id: params.id,
-        userId: session.user.id,
+        id: (await params).id,
+        userId: (session.user as any).id,
       },
       include: {
         items: {

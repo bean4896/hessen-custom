@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
     console.log('API called with sessionId:', sessionId);
     
     if (!sessionId) {
@@ -39,6 +39,7 @@ export async function GET(
     console.log('Order found:', order.id, order.orderNumber);
     return NextResponse.json(order);
   } catch (error) {
+    const { sessionId } = await params;
     console.error('Error fetching order by session:', error);
     console.error('Error details:', {
       message: error instanceof Error ? error.message : 'Unknown error',

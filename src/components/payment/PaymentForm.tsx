@@ -101,7 +101,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ paymentIntentId, items, shipp
     });
 
     if (error) {
-      setMessage(error.message);
+      setMessage(error.message || 'An error occurred');
       setIsLoading(false);
     } else if (paymentIntent && paymentIntent.status === 'succeeded') {
       // Create order in database after successful payment
