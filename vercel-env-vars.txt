@@ -1,0 +1,14 @@
+# Copy these environment variables to Vercel Project Settings
+
+DATABASE_URL=postgresql://username:password@host:port/database?schema=public
+NEXTAUTH_URL=https://hessen-custom.vercel.app
+NEXTAUTH_SECRET=your-production-secret-key-min-32-chars-long
+NEXT_PUBLIC_CURRENCY=SGD
+NEXT_PUBLIC_TAX_RATE=0.09
+NEXT_PUBLIC_SHIPPING_FREE_THRESHOLD=500
+NEXT_PUBLIC_SHIPPING_COST=50
+NEXT_PUBLIC_STRIPE_PUBLIC_KEY=pk_live_your_live_stripe_publishable_key
+STRIPE_SECRET_KEY=sk_live_your_live_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=whsec_your_production_webhook_secret
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://hessen-custom.vercel.app
