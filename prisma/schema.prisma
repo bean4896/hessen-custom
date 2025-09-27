@@ -1,0 +1,224 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum OrderStatus {
+  pending
+  confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum UserRole {
+  customer
+  admin
+  staff
+}
+
+// User Management
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String
+  phone         String?
+  password      String?
+  role          UserRole  @default(customer)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // NextAuth fields
+  accounts Account[]
+  sessions Session[]
+
+  // Relations
+  addresses Address[]
+  orders    Order[]
+  cartItems CartItem[]
+
+  @@map("users")
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Address {
+  id         String      @id @default(uuid())
+  userId     String
+  type       String      @default("shipping") // shipping, billing
+  firstName  String      @default("")
+  lastName   String      @default("")
+  email      String      @default("")
+  phone      String      @default("")
+  line1      String
+  line2      String?
+  city       String
+  postalCode String
+  country    String      @default("Singapore")
+  isDefault  Boolean     @default(false)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  // Relations
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shippingOrders Order[] @relation("ShippingAddress")
+  billingOrders  Order[] @relation("BillingAddress")
+
+  @@map("addresses")
+}
+
+// Product Management
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  basePrice   Decimal  @db.Decimal(10, 2)
+  category    String   @default("bed_frame")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  variants    ProductVariant[]
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String  @id @default(uuid())
+  productId   String
+  name        String
+  price       Decimal @db.Decimal(10, 2)
+  image       String?
+  description String?
+  isActive    Boolean @default(true)
+
+  // Relations
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems CartItem[]
+  orderItems OrderItem[]
+
+  @@map("product_variants")
+}
+
+// Cart Management
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  variantId String?
+  quantity  Int      @default(1)
+  price     Decimal  @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@map("cart_items")
+}
+
+// Order Management
+model Order {
+  id               String      @id @default(uuid())
+  userId           String
+  orderNumber      String      @unique
+  status           OrderStatus @default(pending)
+  paymentStatus    String      @default("pending") // pending, completed, failed, refunded
+  subtotal         Decimal     @db.Decimal(10, 2)
+  tax              Decimal     @db.Decimal(10, 2)
+  shipping         Decimal     @db.Decimal(10, 2)
+  total            Decimal     @db.Decimal(10, 2)
+  shippingAddressId String
+  billingAddressId  String
+  stripeSessionId  String?     @unique
+  stripePaymentIntentId String? @unique
+  paidAt           DateTime?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // Relations
+  user             User        @relation(fields: [userId], references: [id])
+  shippingAddress  Address     @relation("ShippingAddress", fields: [shippingAddressId], references: [id])
+  billingAddress   Address     @relation("BillingAddress", fields: [billingAddressId], references: [id])
+  items            OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  productId    String
+  variantId    String?
+  quantity     Int
+  price        Decimal @db.Decimal(10, 2)
+  total        Decimal @db.Decimal(10, 2)
+  configuration Json?   // Store product configuration as JSON
+
+  // Relations
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@map("order_items")
+}
+
+// Product Configuration (for bed frames)
+model ProductConfiguration {
+  id          String   @id @default(uuid())
+  userId      String?
+  material    String
+  size        String
+  headboard   String
+  bedframeBody String
+  finishColour String
+  optional    String[] // Array of optional item IDs
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("product_configurations")
+}
