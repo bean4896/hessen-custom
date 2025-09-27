@@ -64,8 +64,8 @@ export const useCartStore = create<CartStore>()(
           }
 
           // Calculate totals
-          const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -78,8 +78,8 @@ export const useCartStore = create<CartStore>()(
       removeItem: (id: string) => {
         set((state) => {
           const updatedItems = state.items.filter(item => item.id !== id);
-          const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -99,8 +99,8 @@ export const useCartStore = create<CartStore>()(
           const updatedItems = state.items.map(item =>
             item.id === id ? { ...item, quantity } : item
           );
-          const totalItems = updatedItems.reduce((total, item) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -119,11 +119,11 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotalItems: () => {
-        return get().items.reduce((total, item) => total + item.quantity, 0);
+        return get().items.reduce((total: number, item) => total + item.quantity, 0);
       },
 
       getTotalPrice: () => {
-        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0);
+        return get().items.reduce((total: number, item) => total + (item.price * item.quantity), 0);
       },
     }),
     {
