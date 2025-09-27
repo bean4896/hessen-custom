@@ -57,6 +57,7 @@ const PriceSummary: React.FC<PriceSummaryProps> = ({ selectedOptions }) => {
       productId: 'bed-frame-001',
       quantity: 1,
       price: totalPrice,
+      totalPrice: totalPrice,
       name: configSummary,
       image: `https://hessen.sg/wp-content/uploads/2024/02/${selectedOptions.material}_${selectedOptions.finishColour}.webp`,
       configuration: {

@@ -382,7 +382,7 @@ export default function InternalPage() {
                         {customer.orders.length} orders
                       </Badge>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Total: ${customer.orders.reduce((sum: number, order: any) => sum + order.total, 0).toLocaleString()}
+                        Total: ${customer.orders.reduce((sum: number, order: { total: number }) => sum + order.total, 0).toLocaleString()}
                       </p>
                     </div>
                   </div>

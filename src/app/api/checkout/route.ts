@@ -4,6 +4,22 @@ import { authOptions } from '@/lib/auth';
 import Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 
+interface OrderItem {
+  id: string;
+  productId: string;
+  variantId: string | null;
+  quantity: number;
+  price: any; // Prisma Decimal type
+  configuration: any; // JSON configuration
+  product?: {
+    id: string;
+    name: string;
+  } | null;
+  variant?: {
+    image: string | null;
+  } | null;
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 });
@@ -42,7 +58,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total amount
-    const subtotal = order.items.reduce((sum: number, item: any) => sum + (Number(item.price) * item.quantity), 0);
+    const subtotal = order.items.reduce((sum: number, item: OrderItem) => sum + (Number(item.price) * item.quantity), 0);
     const tax = subtotal * 0.09; // 9% GST
     const shipping = subtotal >= 500 ? 0 : 50;
     const total = subtotal + tax + shipping;
@@ -51,7 +67,7 @@ export async function POST(request: NextRequest) {
     const checkoutSession = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
-        ...order.items.map(item => ({
+        ...order.items.map((item: OrderItem) => ({
           price_data: {
             currency: 'sgd',
             product_data: {

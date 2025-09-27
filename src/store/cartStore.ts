@@ -1,30 +1,20 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { CartItem } from '@/shared/types/ecommerce';
 
-export interface CartItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  price: number;
+// Using CartItem from shared types - extending it for store-specific needs
+interface StoreCartItem extends CartItem {
   name: string;
   image: string;
-  configuration?: {
-    material: string;
-    size: string;
-    headboard: string;
-    bedframeBody: string;
-    finishColour: string;
-    optional: string[];
-  };
 }
 
 interface CartStore {
-  items: CartItem[];
+  items: StoreCartItem[];
   totalItems: number;
   totalPrice: number;
   
   // Actions
-  addItem: (item: Omit<CartItem, 'id'>) => void;
+  addItem: (item: Omit<StoreCartItem, 'id'>) => void;
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -41,9 +31,9 @@ export const useCartStore = create<CartStore>()(
       totalItems: 0,
       totalPrice: 0,
 
-      addItem: (newItem: Omit<CartItem, 'id'>) => {
+      addItem: (newItem: Omit<StoreCartItem, 'id'>) => {
         const itemId = `${newItem.productId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const cartItem: CartItem = { ...newItem, id: itemId };
+        const cartItem: StoreCartItem = { ...newItem, id: itemId };
 
         set((state) => {
           // Check if item already exists with same configuration
@@ -53,7 +43,7 @@ export const useCartStore = create<CartStore>()(
               JSON.stringify(item.configuration) === JSON.stringify(cartItem.configuration)
           );
 
-          let updatedItems: CartItem[];
+          let updatedItems: StoreCartItem[];
           if (existingItemIndex >= 0) {
             // Update quantity of existing item
             updatedItems = [...state.items];
@@ -64,8 +54,8 @@ export const useCartStore = create<CartStore>()(
           }
 
           // Calculate totals
-          const totalItems = updatedItems.reduce((total: number, item: any) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item: StoreCartItem) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item: StoreCartItem) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -78,8 +68,8 @@ export const useCartStore = create<CartStore>()(
       removeItem: (id: string) => {
         set((state) => {
           const updatedItems = state.items.filter(item => item.id !== id);
-          const totalItems = updatedItems.reduce((total: number, item: any) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item: StoreCartItem) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item: StoreCartItem) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -99,8 +89,8 @@ export const useCartStore = create<CartStore>()(
           const updatedItems = state.items.map(item =>
             item.id === id ? { ...item, quantity } : item
           );
-          const totalItems = updatedItems.reduce((total: number, item: any) => total + item.quantity, 0);
-          const totalPrice = updatedItems.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+          const totalItems = updatedItems.reduce((total: number, item: StoreCartItem) => total + item.quantity, 0);
+          const totalPrice = updatedItems.reduce((total: number, item: StoreCartItem) => total + (item.price * item.quantity), 0);
 
           return {
             items: updatedItems,
@@ -119,11 +109,11 @@ export const useCartStore = create<CartStore>()(
       },
 
       getTotalItems: () => {
-        return get().items.reduce((total: number, item: any) => total + item.quantity, 0);
+        return get().items.reduce((total: number, item: StoreCartItem) => total + item.quantity, 0);
       },
 
       getTotalPrice: () => {
-        return get().items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+        return get().items.reduce((total: number, item: StoreCartItem) => total + (item.price * item.quantity), 0);
       },
     }),
     {

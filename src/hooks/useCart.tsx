@@ -1,29 +1,19 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { CartItem } from '@/shared/types/ecommerce';
 
-export interface CartItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  price: number;
+// Using CartItem from shared types - extending it for hook-specific needs
+interface HookCartItem extends CartItem {
   name: string;
   image: string;
-  configuration?: {
-    material: string;
-    size: string;
-    headboard: string;
-    bedframeBody: string;
-    finishColour: string;
-    optional: string[];
-  };
 }
 
 interface CartContextType {
-  items: CartItem[];
+  items: HookCartItem[];
   totalItems: number;
   totalPrice: number;
-  addItem: (item: Omit<CartItem, 'id'>) => void;
+  addItem: (item: Omit<HookCartItem, 'id'>) => void;
   removeItem: (id: string) => void;
   updateItemQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -34,7 +24,7 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<HookCartItem[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
 
@@ -53,8 +43,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Update totals whenever items change
   useEffect(() => {
-    const newTotalItems = items.reduce((total: number, item: any) => total + item.quantity, 0);
-    const newTotalPrice = items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+    const newTotalItems = items.reduce((total: number, item: HookCartItem) => total + item.quantity, 0);
+    const newTotalPrice = items.reduce((total: number, item: HookCartItem) => total + (item.price * item.quantity), 0);
     
     setTotalItems(newTotalItems);
     setTotalPrice(newTotalPrice);
@@ -63,9 +53,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('hessen_cart', JSON.stringify(items));
   }, [items]);
 
-  const addItem = (newItem: Omit<CartItem, 'id'>) => {
+  const addItem = (newItem: Omit<HookCartItem, 'id'>) => {
     const itemId = `${newItem.productId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const cartItem: CartItem = { ...newItem, id: itemId };
+    const cartItem: HookCartItem = { ...newItem, id: itemId };
 
     setItems(prevItems => {
       // Check if item already exists with same configuration
@@ -109,11 +99,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getTotalItems = () => {
-    return items.reduce((total: number, item: any) => total + item.quantity, 0);
+    return items.reduce((total: number, item: HookCartItem) => total + item.quantity, 0);
   };
 
   const getTotalPrice = () => {
-    return items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
+    return items.reduce((total: number, item: HookCartItem) => total + (item.price * item.quantity), 0);
   };
 
   return (
