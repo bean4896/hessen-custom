@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate total amount
-    const subtotal = order.items.reduce((sum: number, item) => sum + (Number(item.price) * item.quantity), 0);
+    const subtotal = order.items.reduce((sum: number, item: any) => sum + (Number(item.price) * item.quantity), 0);
     const tax = subtotal * 0.09; // 9% GST
     const shipping = subtotal >= 500 ? 0 : 50;
     const total = subtotal + tax + shipping;

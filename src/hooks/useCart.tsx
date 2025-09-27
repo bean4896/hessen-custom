@@ -53,8 +53,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Update totals whenever items change
   useEffect(() => {
-    const newTotalItems = items.reduce((total: number, item) => total + item.quantity, 0);
-    const newTotalPrice = items.reduce((total: number, item) => total + (item.price * item.quantity), 0);
+    const newTotalItems = items.reduce((total: number, item: any) => total + item.quantity, 0);
+    const newTotalPrice = items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
     
     setTotalItems(newTotalItems);
     setTotalPrice(newTotalPrice);
@@ -109,11 +109,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const getTotalItems = () => {
-    return items.reduce((total: number, item) => total + item.quantity, 0);
+    return items.reduce((total: number, item: any) => total + item.quantity, 0);
   };
 
   const getTotalPrice = () => {
-    return items.reduce((total: number, item) => total + (item.price * item.quantity), 0);
+    return items.reduce((total: number, item: any) => total + (item.price * item.quantity), 0);
   };
 
   return (
