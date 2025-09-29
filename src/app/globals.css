@@ -37,6 +37,11 @@
   }
 }
 
+/* Prevent horizontal scroll on mobile */
+html, body {
+  overflow-x: hidden;
+}
+
 /* Custom scrollbar styles */
 .dark-scrollbar::-webkit-scrollbar {
   width: 8px;

@@ -12,3 +12,5 @@ STRIPE_SECRET_KEY=sk_live_your_live_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_production_webhook_secret
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://hessen-custom.vercel.app
+
+

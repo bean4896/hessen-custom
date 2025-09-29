@@ -24,12 +24,12 @@ export default function Home(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Global Navbar */}
       <Navbar />
 
       {/* Main Content - Responsive Layout */}
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-4rem)] overflow-x-hidden">
         {/* Left Side - Product Display */}
         <div className="flex-1 flex flex-col lg:min-h-0">
           <ProductGallery selectedOptions={selectedOptions} />

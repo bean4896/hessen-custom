@@ -30,7 +30,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full lg:min-h-0">
+    <div className="flex flex-col h-full lg:min-h-0 overflow-x-hidden">
       {/* Tab Navigation */}
       <div className="p-4 lg:p-8 border-b border-border">
         <TabNavigation
@@ -41,7 +41,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       </div>
 
       {/* Options Grid */}
-      <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+      <div className="flex-1 p-4 lg:p-8 overflow-y-auto overflow-x-hidden">
         {activeTabConfig && (
           <div>
             <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">
