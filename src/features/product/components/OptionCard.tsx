@@ -1,15 +1,28 @@
-import { OptionCardProps } from '../types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
+
+interface OptionItem {
+  id: string;
+  title: string;
+  price: number;
+  image: string;
+  description?: string;
+}
+
+interface OptionCardProps {
+  option: OptionItem;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+}
 
 const OptionCard: React.FC<OptionCardProps> = ({ option, isSelected, onSelect }) => {
   return (
     <Button
       onClick={() => onSelect(option.id)}
       variant="ghost"
-      className={`w-full p-3 border transition-all duration-200 hover:bg-secondary/50 h-auto ${
+      className={`w-full p-2 lg:p-3 border transition-all duration-200 hover:bg-secondary/50 h-auto min-h-[60px] lg:min-h-auto ${
         isSelected
           ? 'border-orange-500 bg-orange-500/10'
           : 'border-border/30 hover:border-border'

@@ -1,18 +1,18 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { ProductConfiguration } from '../types';
-import { productTabs } from '../data/productOptions';
-import { Button } from '@/components/ui/button';
 import { ShoppingCart, Save, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ProductConfiguration } from '../../../shared/types/ecommerce';
+import { productTabs } from '../data/productOptions';
 import { useCart } from '@/hooks/useCart';
 import { useSavedConfigurations } from '@/hooks/useSavedConfigurations';
 import ConfigureSummary from './ConfigureSummary';
 
-interface PriceSummaryProps {
+interface MobileBottomPanelProps {
   selectedOptions: ProductConfiguration;
 }
 
-const PriceSummary: React.FC<PriceSummaryProps> = ({ selectedOptions }) => {
+const MobileBottomPanel: React.FC<MobileBottomPanelProps> = ({ selectedOptions }) => {
   const { addItem } = useCart();
   const { addConfiguration } = useSavedConfigurations();
   const [isAdding, setIsAdding] = useState(false);
@@ -20,24 +20,20 @@ const PriceSummary: React.FC<PriceSummaryProps> = ({ selectedOptions }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+
   const totalPrice = useMemo(() => {
     let total = 1299; // Base price
-
     const categoryOrder: (keyof ProductConfiguration)[] = ['material', 'finishColour', 'size', 'headboard', 'bedframeBody', 'optional'];
 
     categoryOrder.forEach(category => {
       const tab = productTabs.find(t => t.category === category);
       if (tab) {
         const selectedValue = selectedOptions[category];
-
         if (selectedValue && selectedValue !== '') {
           const valueToCheck = Array.isArray(selectedValue) ? selectedValue[0] : selectedValue;
           const option = tab.options.find(o => o.id === valueToCheck);
-
-          if (option) {
-            if (option.price !== 0) {
-              total += option.price;
-            }
+          if (option && option.price !== 0) {
+            total += option.price;
           }
         }
       }
@@ -100,80 +96,71 @@ const PriceSummary: React.FC<PriceSummaryProps> = ({ selectedOptions }) => {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Configuration Summary - Desktop Only */}
-      <div className="hidden lg:block">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border shadow-lg z-40">
+      <div className="p-4 space-y-4">
+        {/* Configuration Summary */}
         <ConfigureSummary selectedOptions={selectedOptions} />
-      </div>
 
-      {/* Total Price Display */}
-      <div className="text-center">
-        <div className="text-2xl lg:text-3xl font-bold text-orange-500 mb-1">
-          ${totalPrice.toLocaleString()}
+        {/* Action Buttons */}
+        <div className="space-y-2">
+          <Button 
+            onClick={handleAddToCart}
+            disabled={isAdding || added}
+            className={`w-full font-semibold py-3 text-base ${
+              added 
+                ? 'bg-green-600 hover:bg-green-700 text-white' 
+                : 'bg-orange-600 hover:bg-orange-700 text-white'
+            }`}
+          >
+            {added ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Added to Cart
+              </>
+            ) : isAdding ? (
+              <>
+                <ShoppingCart className="w-4 h-4 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Add to Cart
+              </>
+            )}
+          </Button>
+          
+          <Button 
+            onClick={handleSaveConfiguration}
+            disabled={isSaving || saved}
+            variant="outline" 
+            className={`w-full border-border hover:border-border/80 text-foreground hover:text-foreground hover:bg-secondary text-base ${
+              saved 
+                ? 'border-green-500 bg-green-500/10 text-green-500' 
+                : ''
+            }`}
+          >
+            {saved ? (
+              <>
+                <Check className="w-4 h-4 mr-2" />
+                Configuration Saved
+              </>
+            ) : isSaving ? (
+              <>
+                <Save className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4 mr-2" />
+                Save Configuration
+              </>
+            )}
+          </Button>
         </div>
-        <div className="text-xs lg:text-sm text-muted-foreground">
-          Estimated delivery 4-6 weeks after order
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="space-y-2">
-        <Button 
-          onClick={handleAddToCart}
-          disabled={isAdding || added}
-          className={`w-full font-semibold py-3 text-sm lg:text-base ${
-            added 
-              ? 'bg-green-600 hover:bg-green-700 text-white' 
-              : 'bg-orange-600 hover:bg-orange-700 text-white'
-          }`}
-        >
-          {added ? (
-            <>
-              <Check className="w-4 h-4 mr-2" />
-              Added to Cart
-            </>
-          ) : isAdding ? (
-            <>
-              <ShoppingCart className="w-4 h-4 mr-2 animate-spin" />
-              Adding...
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Add to Cart
-            </>
-          )}
-        </Button>
-                <Button 
-                  onClick={handleSaveConfiguration}
-                  disabled={isSaving || saved}
-                  variant="outline" 
-                  className={`w-full border-border hover:border-border/80 text-foreground hover:text-foreground hover:bg-secondary text-sm lg:text-base ${
-                    saved 
-                      ? 'border-green-500 bg-green-500/10 text-green-500' 
-                      : ''
-                  }`}
-                >
-                  {saved ? (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Configuration Saved
-                    </>
-                  ) : isSaving ? (
-                    <>
-                      <Save className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Configuration
-                    </>
-                  )}
-                </Button>
       </div>
     </div>
   );
 };
 
-export default PriceSummary;
+export default MobileBottomPanel;

@@ -9,7 +9,6 @@ import { useCart } from '@/hooks/useCart';
 import { 
   Menu, 
   X, 
-  Search, 
   ShoppingCart, 
   User,
   Bed,
@@ -24,9 +23,10 @@ const Navbar = () => {
   const { totalItems: cartItemCount } = useCart();
 
   const navigation = [
-    { name: 'Bedframe', href: '#', icon: Bed },
-    { name: 'Kitchen', href: '#', icon: Settings },
-    { name: 'Sideboard', href: '#', icon: Heart },
+    { name: 'Bedframe', href: '/bedframe', icon: Bed },
+    { name: 'Kitchen', href: '/kitchen', icon: Settings },
+    { name: 'Storage', href: '/storage-cabinets', icon: Heart },
+    { name: 'Living Room', href: '/living-room-wall', icon: Settings2 },
   ];
 
   return (
@@ -34,33 +34,30 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-3">
+          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
               <span className="text-white font-bold text-lg">H</span>
             </div>
             <div className="hidden sm:block">
               <span className="text-2xl font-bold text-foreground">Hessen</span>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navigation.map((item) => (
-              <a
+              <Link
                 key={item.name}
                 href={item.href}
                 className="text-muted-foreground hover:text-foreground transition-colors duration-200 font-medium"
               >
                 {item.name}
-              </a>
+              </Link>
             ))}
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-secondary/50">
-              <Search className="w-5 h-5" />
-            </Button>
             <Link href="/my-saved-configure">
               <Button 
                 variant="ghost" 
@@ -146,22 +143,18 @@ const Navbar = () => {
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md">
             <div className="px-2 pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
-                <a
+                <Link
                   key={item.name}
                   href={item.href}
                   className="flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors"
                 >
                   <item.icon className="w-5 h-5" />
                   <span>{item.name}</span>
-                </a>
+                </Link>
               ))}
-              <div className="flex items-center justify-between px-3 py-2 border-t border-border mt-2 pt-3">
-                <Button variant="ghost" size="sm" className="flex-1 mr-2">
-                  <Search className="w-4 h-4 mr-2" />
-                  Search
-                </Button>
+              <div className="flex items-center justify-center px-3 py-2 border-t border-border mt-2 pt-3">
                 <LoginModal>
-                  <Button variant="ghost" size="sm" className="flex-1 ml-2">
+                  <Button variant="ghost" size="sm" className="w-full">
                     <User className="w-4 h-4 mr-2" />
                     Account
                   </Button>

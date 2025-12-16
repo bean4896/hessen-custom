@@ -1,20 +1,28 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ProductGalleryProps, ProductConfiguration } from '../types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { getProductById } from '../../../shared/utils/productManager';
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
+interface ProductGalleryProps {
+  selectedOptions: Record<string, string | string[]>;
+  productId: string;
+}
+
+const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, productId }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set());
+  
+  // Get product information
+  const product = getProductById(productId);
   
   // Your Cloudinary configuration - REMOVED fixed dimensions
   const CLOUDINARY_CONFIG = {
     cloudName: 'dxpnm8bat',
     baseUrl: 'https://res.cloudinary.com/dxpnm8bat/image/upload',
-    folder: 'bedframes',
+    folder: productId === 'bedframe' ? 'bedframes' : productId,
     // Updated transformations for better quality without fixed dimensions
     transformations: 'f_auto,q_auto'
   };
@@ -29,18 +37,27 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
   ];
 
   // Generate Cloudinary URLs with flexible dimensions
-  const generateImageUrl = (options: ProductConfiguration, viewIndex: number): string => {
-    const { material, size, headboard, finishColour } = options;
+  const generateImageUrl = (options: Record<string, string | string[]>, viewIndex: number): string => {
     const view = viewAngles[viewIndex];
-    
-    const safeMaterial = material || 'rubberwood';
-    const safeSize = size || 'queen';
-    const safeHeadboard = headboard || 'panel';
-    const safeFinish = finishColour || 'natural';
     const safeView = view.name || 'front';
     
-    // Build the structured path
-    const cloudinaryPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeSize}/${safeHeadboard}/${safeView}`;
+    // Get safe values with fallbacks
+    const safeMaterial = (options.material as string) || 'rubberwood';
+    const safeFinish = (options.finishColour as string) || 'natural';
+    
+    // Build path based on product type
+    let cloudinaryPath: string;
+    if (productId === 'bedframe') {
+      const safeSize = (options.size as string) || 'queen';
+      const safeHeadboard = (options.headboard as string) || 'panel';
+      cloudinaryPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeSize}/${safeHeadboard}/${safeView}`;
+    } else if (productId === 'kitchen') {
+      const safeCountertop = (options.countertop as string) || 'quartz';
+      cloudinaryPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeCountertop}/${safeView}`;
+    } else {
+      // For other products, use simpler structure
+      cloudinaryPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeView}`;
+    }
     
     // Use flexible transformations - no fixed dimensions
     const imageUrl = `${CLOUDINARY_CONFIG.baseUrl}/${CLOUDINARY_CONFIG.transformations}/${cloudinaryPath}.webp`;
@@ -54,8 +71,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
   };
 
   // Enhanced fallback with proper aspect ratio
-  const generateFallbackUrl = (options: ProductConfiguration, viewIndex: number, attemptedUrl: string): string => {
-    const { material, size, headboard, finishColour } = options;
+  const generateFallbackUrl = (options: Record<string, string | string[]>, viewIndex: number, attemptedUrl: string): string => {
     const view = viewAngles[viewIndex];
     
     const colorMap: Record<string, string> = {
@@ -65,19 +81,39 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
       white: 'F8F8FF'
     };
     
-    const bgColor = colorMap[finishColour] || 'D2B48C';
-    const textColor = ['natural', 'honey', 'white'].includes(finishColour) ? '000000' : 'FFFFFF';
+    const safeMaterial = (options.material as string) || 'rubberwood';
+    const safeFinish = (options.finishColour as string) || 'natural';
     
-    const materialName = material.charAt(0).toUpperCase() + material.slice(1);
-    const sizeName = size.charAt(0).toUpperCase() + size.slice(1);
-    const finishName = finishColour.charAt(0).toUpperCase() + finishColour.slice(1);
-    const headboardName = headboard.charAt(0).toUpperCase() + headboard.slice(1);
+    const bgColor = colorMap[safeFinish] || 'D2B48C';
+    const textColor = ['natural', 'honey', 'white'].includes(safeFinish) ? '000000' : 'FFFFFF';
     
-    const expectedPath = `${CLOUDINARY_CONFIG.folder}/${material}/${finishColour}/${size}/${headboard}/${view.name}`;
+    const materialName = safeMaterial.charAt(0).toUpperCase() + safeMaterial.slice(1);
+    const finishName = safeFinish.charAt(0).toUpperCase() + safeFinish.slice(1);
+    
+    // Build expected path based on product type
+    let expectedPath: string;
+    let productName: string;
+    
+    if (productId === 'bedframe') {
+      const safeSize = (options.size as string) || 'queen';
+      const safeHeadboard = (options.headboard as string) || 'panel';
+      const sizeName = safeSize.charAt(0).toUpperCase() + safeSize.slice(1);
+      const headboardName = safeHeadboard.charAt(0).toUpperCase() + safeHeadboard.slice(1);
+      expectedPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeSize}/${safeHeadboard}/${view.name}`;
+      productName = `${materialName} ${sizeName} Bed`;
+    } else if (productId === 'kitchen') {
+      const safeCountertop = (options.countertop as string) || 'quartz';
+      const countertopName = safeCountertop.charAt(0).toUpperCase() + safeCountertop.slice(1);
+      expectedPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${safeCountertop}/${view.name}`;
+      productName = `${materialName} Kitchen`;
+    } else {
+      expectedPath = `${CLOUDINARY_CONFIG.folder}/${safeMaterial}/${safeFinish}/${view.name}`;
+      productName = `${materialName} ${product?.name || 'Product'}`;
+    }
     
     const placeholderText = [
-      `${materialName} ${sizeName} Bed`,
-      `${finishName} • ${headboardName}`,
+      productName,
+      `${finishName} Finish`,
       `${view.label}`,
       ``,
       `📤 Upload to Cloudinary as:`,
@@ -91,18 +127,18 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
 
   // Generate all image variations
   const images = viewAngles.map((view, index) => {
-    const cloudinaryPath = `${CLOUDINARY_CONFIG.folder}/${selectedOptions.material}/${selectedOptions.finishColour}/${selectedOptions.size}/${selectedOptions.headboard}/${view.name}`;
-    const fullCloudinaryUrl = `${CLOUDINARY_CONFIG.baseUrl}/${CLOUDINARY_CONFIG.transformations}/${cloudinaryPath}.webp`;
+    const url = generateImageUrl(selectedOptions, index);
+    const expectedPublicId = url.split('/').slice(-2).join('/').replace('.webp', '');
     
     return {
-      url: generateImageUrl(selectedOptions, index),
+      url: url,
       view: view.name,
       label: view.label,
       description: view.description,
-      cloudinaryPath: `${cloudinaryPath}.webp`,
-      fullCloudinaryUrl: fullCloudinaryUrl,
-      expectedPublicId: cloudinaryPath,
-      isAvailable: !imageLoadErrors.has(fullCloudinaryUrl)
+      cloudinaryPath: `${expectedPublicId}.webp`,
+      fullCloudinaryUrl: url,
+      expectedPublicId: expectedPublicId,
+      isAvailable: !imageLoadErrors.has(url)
     };
   });
 
@@ -170,37 +206,80 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
   };
 
   const getConfigSummary = (): string => {
-    const { material, size, headboard, bedframeBody, finishColour } = selectedOptions;
+    const formatName = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
     
-    const formatName = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+    const safeMaterial = (selectedOptions.material as string) || 'rubberwood';
+    const safeFinish = (selectedOptions.finishColour as string) || 'natural';
     
-    const parts = [
-      formatName(material),
-      formatName(size),
-      'Bed',
-      '-',
-      formatName(finishColour),
-      'Finish',
-      '-',
-      formatName(headboard),
-      'Headboard',
-      '-',
-      formatName(bedframeBody),
-      'Base'
-    ];
+    const parts = [formatName(safeMaterial)];
+    
+    if (productId === 'bedframe') {
+      const safeSize = (selectedOptions.size as string) || 'queen';
+      const safeHeadboard = (selectedOptions.headboard as string) || 'panel';
+      const safeBedframeBody = (selectedOptions.bedframeBody as string) || 'platform';
+      
+      parts.push(
+        formatName(safeSize),
+        'Bed',
+        '-',
+        formatName(safeFinish),
+        'Finish',
+        '-',
+        formatName(safeHeadboard),
+        'Headboard',
+        '-',
+        formatName(safeBedframeBody),
+        'Base'
+      );
+    } else if (productId === 'kitchen') {
+      const safeCountertop = (selectedOptions.countertop as string) || 'quartz';
+      
+      parts.push(
+        'Kitchen',
+        '-',
+        formatName(safeFinish),
+        'Finish',
+        '-',
+        formatName(safeCountertop),
+        'Countertop'
+      );
+    } else {
+      parts.push(
+        product?.name || 'Product',
+        '-',
+        formatName(safeFinish),
+        'Finish'
+      );
+    }
     
     return parts.join(' ');
   };
 
   const getDetailedConfig = () => {
-    const { material, size, headboard, bedframeBody, finishColour } = selectedOptions;
-    return {
-      material: material.charAt(0).toUpperCase() + material.slice(1),
-      size: size.charAt(0).toUpperCase() + size.slice(1),
-      finish: finishColour.charAt(0).toUpperCase() + finishColour.slice(1),
-      headboard: headboard.charAt(0).toUpperCase() + headboard.slice(1),
-      base: bedframeBody.charAt(0).toUpperCase() + bedframeBody.slice(1)
+    const formatName = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
+    
+    const safeMaterial = (selectedOptions.material as string) || 'rubberwood';
+    const safeFinish = (selectedOptions.finishColour as string) || 'natural';
+    
+    const config: Record<string, string> = {
+      material: formatName(safeMaterial),
+      finish: formatName(safeFinish)
     };
+    
+    if (productId === 'bedframe') {
+      const safeSize = (selectedOptions.size as string) || 'queen';
+      const safeHeadboard = (selectedOptions.headboard as string) || 'panel';
+      const safeBedframeBody = (selectedOptions.bedframeBody as string) || 'platform';
+      
+      config.size = formatName(safeSize);
+      config.headboard = formatName(safeHeadboard);
+      config.base = formatName(safeBedframeBody);
+    } else if (productId === 'kitchen') {
+      const safeCountertop = (selectedOptions.countertop as string) || 'quartz';
+      config.countertop = formatName(safeCountertop);
+    }
+    
+    return config;
   };
 
       return (
@@ -209,7 +288,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
           <div className="p-4 lg:p-6 border-b border-border bg-card">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
-                <h1 className="text-xl lg:text-2xl font-bold text-foreground">Custom Bed Frame</h1>
+                <h1 className="text-xl lg:text-2xl font-bold text-foreground">Custom {product?.name || 'Product'}</h1>
                 <p className="text-sm lg:text-base text-muted-foreground mt-1">{getConfigSummary()}</p>
               </div>
               <div className="text-left sm:text-right">
@@ -224,7 +303,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions }) => {
             <div className="h-full flex items-center justify-center bg-gradient-to-br from-secondary/20 to-secondary/40">
               <img
                 src={images[currentImageIndex].url}
-                alt={`Hessen Bed Frame - ${images[currentImageIndex].label}`}
+                alt={`Hessen ${product?.name || 'Product'} - ${images[currentImageIndex].label}`}
                 className="max-w-full max-h-full object-contain transition-all duration-300 hover:scale-105"
                 loading="eager"
                 onError={() => handleImageError(images[currentImageIndex].url, currentImageIndex)}

@@ -3,18 +3,29 @@ import { useState, useMemo } from 'react';
 import { ProductConfiguratorProps } from '../types';
 import TabNavigation from './TabNavigation';
 import OptionGrid from './OptionGrid';
-import { productTabs } from '../data/productOptions';
+import { getProductTabs } from '../../../shared/utils/productManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
+interface FlexibleProductConfiguratorProps {
+  selectedOptions: Record<string, string | string[]>;
+  onOptionChange: (category: string, value: string | string[]) => void;
+  productId: string;
+}
+
+const ProductConfigurator: React.FC<FlexibleProductConfiguratorProps> = ({
   selectedOptions,
-  onOptionChange
+  onOptionChange,
+  productId
 }) => {
   const [activeTab, setActiveTab] = useState<string>('material');
+  
+  const productTabs = useMemo(() => {
+    return getProductTabs(productId);
+  }, [productId]);
 
   const activeTabConfig = useMemo(() => {
     return productTabs.find(tab => tab.id === activeTab);
-  }, [activeTab]);
+  }, [activeTab, productTabs]);
 
   const handleOptionSelect = (value: string): void => {
     if (activeTabConfig) {
@@ -32,7 +43,7 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   return (
     <div className="flex flex-col h-full lg:min-h-0 overflow-x-hidden">
       {/* Tab Navigation */}
-      <div className="p-4 lg:p-8 border-b border-border">
+      <div className="p-3 lg:p-8 border-b border-border">
         <TabNavigation
           tabs={productTabs}
           activeTab={activeTab}
@@ -41,10 +52,10 @@ const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       </div>
 
       {/* Options Grid */}
-      <div className="flex-1 p-4 lg:p-8 overflow-y-auto overflow-x-hidden">
+      <div className="flex-1 p-3 lg:p-8 overflow-y-auto overflow-x-hidden">
         {activeTabConfig && (
           <div>
-            <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">
+            <h3 className="text-base lg:text-lg font-semibold text-foreground mb-3 lg:mb-4">
               {activeTabConfig.label}
             </h3>
             <OptionGrid
