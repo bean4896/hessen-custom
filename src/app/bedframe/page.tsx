@@ -10,7 +10,9 @@ import { getDefaultConfiguration } from '../../shared/utils/productManager';
 
 export default function BedframePage(): JSX.Element {
   const [selectedOptions, setSelectedOptions] = useState<ProductConfiguration>(
-    getDefaultConfiguration('bedframe') as ProductConfiguration
+    // `getDefaultConfiguration` returns a generic record, but for
+    // the `bedframe` product we know it matches `ProductConfiguration`.
+    getDefaultConfiguration('bedframe') as unknown as ProductConfiguration
   );
 
   const handleOptionChange = (category: string, value: string | string[]): void => {

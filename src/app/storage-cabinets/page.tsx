@@ -10,7 +10,9 @@ import { getDefaultConfiguration } from '../../shared/utils/productManager';
 
 export default function StorageCabinetsPage(): JSX.Element {
   const [selectedOptions, setSelectedOptions] = useState<ProductConfiguration>(
-    getDefaultConfiguration('storage-cabinets') as ProductConfiguration
+    // `getDefaultConfiguration` returns a generic record, but for
+    // the `storage-cabinets` product we know the keys map to our configuration shape.
+    getDefaultConfiguration('storage-cabinets') as unknown as ProductConfiguration
   );
 
   const handleOptionChange = (category: string, value: string | string[]): void => {

@@ -10,7 +10,9 @@ import { getDefaultConfiguration } from '../../shared/utils/productManager';
 
 export default function LivingRoomWallPage(): JSX.Element {
   const [selectedOptions, setSelectedOptions] = useState<ProductConfiguration>(
-    getDefaultConfiguration('living-room-wall') as ProductConfiguration
+    // `getDefaultConfiguration` returns a generic record, but for
+    // the `living-room-wall` product we know the keys map to our configuration shape.
+    getDefaultConfiguration('living-room-wall') as unknown as ProductConfiguration
   );
 
   const handleOptionChange = (category: string, value: string | string[]): void => {

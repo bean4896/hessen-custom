@@ -1,13 +1,13 @@
 'use client';
 import { useState, useMemo } from 'react';
-import { ProductConfiguratorProps } from '../types';
 import TabNavigation from './TabNavigation';
 import OptionGrid from './OptionGrid';
 import { getProductTabs } from '../../../shared/utils/productManager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FlexibleProductConfiguratorProps {
-  selectedOptions: Record<string, string | string[]>;
+  // Accept any configuration shape and cast internally for flexibility
+  selectedOptions: unknown;
   onOptionChange: (category: string, value: string | string[]) => void;
   productId: string;
 }
@@ -17,6 +17,7 @@ const ProductConfigurator: React.FC<FlexibleProductConfiguratorProps> = ({
   onOptionChange,
   productId
 }) => {
+  const optionRecord = selectedOptions as Record<string, string | string[]>;
   const [activeTab, setActiveTab] = useState<string>('material');
   
   const productTabs = useMemo(() => {
@@ -36,7 +37,7 @@ const ProductConfigurator: React.FC<FlexibleProductConfiguratorProps> = ({
   const getCurrentSelectedValue = (): string => {
     if (!activeTabConfig) return '';
     if (activeTab === 'optional') return '';
-    const selectedValue = selectedOptions[activeTabConfig.category];
+    const selectedValue = optionRecord[activeTabConfig.category];
     return Array.isArray(selectedValue) ? selectedValue[0] || '' : selectedValue || '';
   };
 

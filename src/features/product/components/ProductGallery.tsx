@@ -7,11 +7,13 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getProductById } from '../../../shared/utils/productManager';
 
 interface ProductGalleryProps {
-  selectedOptions: Record<string, string | string[]>;
+  // Accept any configuration shape and cast internally for flexibility
+  selectedOptions: unknown;
   productId: string;
 }
 
 const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, productId }) => {
+  const optionRecord = selectedOptions as Record<string, string | string[]>;
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
   const [imageLoadErrors, setImageLoadErrors] = useState<Set<string>>(new Set());
   
@@ -127,7 +129,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, produc
 
   // Generate all image variations
   const images = viewAngles.map((view, index) => {
-    const url = generateImageUrl(selectedOptions, index);
+    const url = generateImageUrl(optionRecord, index);
     const expectedPublicId = url.split('/').slice(-2).join('/').replace('.webp', '');
     
     return {
@@ -208,15 +210,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, produc
   const getConfigSummary = (): string => {
     const formatName = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
     
-    const safeMaterial = (selectedOptions.material as string) || 'rubberwood';
-    const safeFinish = (selectedOptions.finishColour as string) || 'natural';
+    const safeMaterial = (optionRecord.material as string) || 'rubberwood';
+    const safeFinish = (optionRecord.finishColour as string) || 'natural';
     
     const parts = [formatName(safeMaterial)];
     
     if (productId === 'bedframe') {
-      const safeSize = (selectedOptions.size as string) || 'queen';
-      const safeHeadboard = (selectedOptions.headboard as string) || 'panel';
-      const safeBedframeBody = (selectedOptions.bedframeBody as string) || 'platform';
+      const safeSize = (optionRecord.size as string) || 'queen';
+      const safeHeadboard = (optionRecord.headboard as string) || 'panel';
+      const safeBedframeBody = (optionRecord.bedframeBody as string) || 'platform';
       
       parts.push(
         formatName(safeSize),
@@ -232,7 +234,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, produc
         'Base'
       );
     } else if (productId === 'kitchen') {
-      const safeCountertop = (selectedOptions.countertop as string) || 'quartz';
+      const safeCountertop = (optionRecord.countertop as string) || 'quartz';
       
       parts.push(
         'Kitchen',
@@ -258,8 +260,8 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, produc
   const getDetailedConfig = () => {
     const formatName = (str: string) => str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
     
-    const safeMaterial = (selectedOptions.material as string) || 'rubberwood';
-    const safeFinish = (selectedOptions.finishColour as string) || 'natural';
+    const safeMaterial = (optionRecord.material as string) || 'rubberwood';
+    const safeFinish = (optionRecord.finishColour as string) || 'natural';
     
     const config: Record<string, string> = {
       material: formatName(safeMaterial),
@@ -267,15 +269,15 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ selectedOptions, produc
     };
     
     if (productId === 'bedframe') {
-      const safeSize = (selectedOptions.size as string) || 'queen';
-      const safeHeadboard = (selectedOptions.headboard as string) || 'panel';
-      const safeBedframeBody = (selectedOptions.bedframeBody as string) || 'platform';
+      const safeSize = (optionRecord.size as string) || 'queen';
+      const safeHeadboard = (optionRecord.headboard as string) || 'panel';
+      const safeBedframeBody = (optionRecord.bedframeBody as string) || 'platform';
       
       config.size = formatName(safeSize);
       config.headboard = formatName(safeHeadboard);
       config.base = formatName(safeBedframeBody);
     } else if (productId === 'kitchen') {
-      const safeCountertop = (selectedOptions.countertop as string) || 'quartz';
+      const safeCountertop = (optionRecord.countertop as string) || 'quartz';
       config.countertop = formatName(safeCountertop);
     }
     

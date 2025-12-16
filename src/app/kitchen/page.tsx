@@ -10,7 +10,9 @@ import { getDefaultConfiguration } from '../../shared/utils/productManager';
 
 export default function KitchenPage(): JSX.Element {
   const [selectedOptions, setSelectedOptions] = useState<ProductConfiguration>(
-    getDefaultConfiguration('kitchen') as ProductConfiguration
+    // `getDefaultConfiguration` returns a generic record, but for
+    // the `kitchen` product we know the keys map to our configuration shape.
+    getDefaultConfiguration('kitchen') as unknown as ProductConfiguration
   );
 
   const handleOptionChange = (category: string, value: string | string[]): void => {
